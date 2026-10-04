@@ -1,0 +1,21 @@
+# Credenziali e dati sensibili (NON pubblicarli mai!)
+.env
+.env.local
+*.conf
+test.txt
+
+# Dipendenze e librerie (Node, Python, PHP, ecc.)
+node_modules/
+__pycache__/
+.venv/
+vendor/
+
+# Cartelle di Build e file generati
+dist/
+build/
+*.log
+
+# File di sistema e degli Editor (Mac, Windows, VS Code)
+.DS_Store
+Thumbs.db
+.vscode/
