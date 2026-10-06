@@ -25,14 +25,27 @@ def ftp():
         if selected_mode == 'q':
             print('Bye!')
             sys.exit
-        elif selected_mode == 1:
+        elif selected_mode == '1':
             ftp_mode_1()
-        elif selected_mode == 2:
+        elif selected_mode == '2':
             ftp_mode_2()
-        elif selected_mode == 3:
+        elif selected_mode == '3v':
             ftp_mode_3()
         else:
             print('Mode not found, please try again.')
+
+def ftp_mode_1():
+    while True:
+        password_list_file = input(
+            "Please type the file's path containing the passwords' list.\t"
+        )
+        try:
+            with open(password_list_file, 'r', encoding='utf-8') as file:
+                password_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            print(password_list)
 
 
 def input_mode():
@@ -50,3 +63,5 @@ def input_mode():
             ftp()
         else:
             print('Mode not found, please try again.')
+
+input_mode()
