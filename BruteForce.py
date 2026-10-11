@@ -34,7 +34,7 @@ def ftp():
             ftp_mode_2_connect()
             return None
         elif selected_mode == '3':
-            ftp_mode_3()
+            ftp_mode_3_connect()
             return None
         else:
             print('Mode not found, please try again.')
@@ -76,19 +76,19 @@ def ftp_mode_1_connect():
     ftp.quit()
 
 def ftp_mode_2_info():
-    info['host'] = input(
-        'Enter the host: '
-        )
-    info['port'] = int(input(
-        'Enter the port: '
-    ))
-    user_list_file = input(
-        "Please type the file's path containing the users' list: "
-    )
-    info['password'] = input(
-        'Enter the password: '
-    )
     while True:
+        info['host'] = input(
+            'Enter the host: '
+            )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        user_list_file = input(
+            "Please type the file's path containing the users' list: "
+        )
+        info['password'] = input(
+            'Enter the password: '
+        )
         try:
             with open(user_list_file, 'r', encoding='utf-8') as file:
                 user_list = [line.strip() for line in file]
@@ -110,8 +110,53 @@ def ftp_mode_2_connect():
             print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
     ftp.quit()
-    
-                    
+
+def ftp_mode_3_info():
+    while True:
+        info['host'] = input(
+            'Enter the host:\t'
+        )
+        info['port'] = int(input(
+            'Enter the port:\t'
+        ))
+        users_list_file = input(
+            "Please type the file's path containing the users' list: "
+        )
+        password_list_file = input(
+            "Please type the file's path containing the passwords' list: "
+        )
+        try:
+            with open(users_list_file, 'r', encoding='utf-8') as user_file:
+                user_list = [line.strip() for line in user_file]
+        except FileNotFoundError:
+            print('This file (user_path) does not exist, please try again.')
+        else:
+            info['user_list'] = user_list
+        try:
+            with open(password_list_file, 'r', encoding='utf-8') as password_file:
+                password_list = [line.strip() for line in password_file]
+        except FileNotFoundError:
+            print('This file (password_path) does not exist, please try again.')
+        else:
+            info['password_list'] = password_list
+            return None
+
+def ftp_mode_3_connect():
+    ftp_mode_3_info()
+    user_list = info['user_list']
+    password_list = info['password_list']
+    ftp = FTP()
+    ftp.connect(host=info['host'], port=info['port'])
+    for user in user_list:
+        for password in password_list:
+            try:
+                ftp.login(user=user, passwd=password)
+            except error_perm:
+                print(f'Login failed with user "{user}" and password "{password}".')
+            else:
+                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                break
+    ftp.quit()
 
 
 def input_mode():
