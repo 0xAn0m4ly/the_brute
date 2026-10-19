@@ -188,25 +188,25 @@ def telnet():
 
 def telnet_1_info():
     while True:
-        info['host'] = input(
-           'Enter the host: '
-        )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
-        info['user'] = input(
-            'Enter the user: '
-        )
-        password_list_file = input(
-            "Please type the file's path containing the passwords' list: "
-        )
-        try:
-            with open(password_list_file, 'r', encoding='utf-8') as file:
-                password_list = [line.strip() for line in file]
-        except FileNotFoundError:
-            print('This file does not exist, please try again.')
+        for number, mode in methods.items():
+           print(number + ' -> ' + mode)
+        selected_mode = input(
+            'Please select the telnet option from the previos ones by typing the correspondive number: '
+           )
+        if selected_mode == 'q':
+            print('Bye!')
+            sys.exit
+        elif selected_mode == '1':
+            telnet_1_connect()
+            return None
+        elif selected_mode == '2':
+            telnet_2_connect()
+            return None
+        elif selected_mode == '3':
+            telnet_3_connect()
+            return None
         else:
-            return password_list
+            print('Mode not found, please try again.')
 
 def clean_telnet(data: bytes) -> str:
     cleaned = re.sub(b'\xff[\xf0-\xff][\x00-\xff]|\xff\xfa.*?\xff\xf0', b'', data, flags=re.DOTALL)
@@ -273,6 +273,9 @@ def ssh():
             return None
         else:
             print('Mode not found, please try again.')
+
+def ssh_1_info():
+
     
 
     
