@@ -9,6 +9,7 @@ import re
 modes = {
     'a': 'ftp',
     'b': 'telnet'
+    'c': 'ssh'
 }
 
 methods = {
@@ -250,6 +251,29 @@ def telnet_1_connect():
             except:
                 pass
 
+# Ssh
+def ssh():
+    while True:
+        for number, mode in methods.items():
+            print(number + ' -> ' + mode)
+        selected_mode = input(
+            'Please select the ssh option from the previos ones by typing the correspondive number: '
+            )
+        if selected_mode == 'q':
+            print('Bye!')
+            sys.exit
+        elif selected_mode == '1':
+            ssh_1_connect()
+            return None
+        elif selected_mode == '2':
+            ssh_2_connect()
+            return None
+        elif selected_mode == '3':
+            ssh_3_connect()
+            return None
+        else:
+            print('Mode not found, please try again.')
+    
 
     
 
@@ -276,6 +300,8 @@ def input_mode():
         elif selected_mode == 'b':
             telnet()
             return None
+        elif selected_mode == 'c':
+            ssh()
         else:
             print('Mode not found, please try again.')
 
