@@ -303,7 +303,9 @@ def ssh_1_connect():
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     for password in password_list:
         try:
-            ssh.connect(hostname=info['host'], port=info['port'], username=info['user'], password='password')
+            ssh.connect(
+                hostname='test.rebex.net', port=22, username='demo', password='password', disabled_algorithms=None, look_for_keys=False, allow_agent=False
+                )
             time.sleep(1)
         except paramiko.AuthenticationException:
             print(f'Login failed with user "{info['user']}" and password "{password}".')
@@ -313,6 +315,28 @@ def ssh_1_connect():
             break
     ssh.close()
     # RIMA APERTO DOPO LA FINE RISOLVERE
+
+def ssh_2_info():
+    while True:
+        info['host'] = input(
+            'Enter the host: '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        info['password'] = input(
+                'Enter the password: '
+            )
+        user_list_file = input(
+                "Please type the file's path containing the passwords' list: "
+            )
+        try:
+            with open(user_list_file, 'r', encoding='utf-8') as file:
+                user_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            return user_list
 
 
    
