@@ -354,7 +354,53 @@ def ssh_2_connect():
         else:
             print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
+    ssh.close()
 
+def ssh_3_info():
+    while True:
+        info['host'] = input(
+            'Enter the host: '
+            )
+        info['port'] = int(input(
+            'Enter the port: '
+            ))
+        user_list_file = input(
+            "Please type the file's path containing the passwords' list: "
+            )
+        password_list_file = input(
+            'Enter the password: '
+            )
+        try:
+            with open(user_list_file, 'r', encoding='utf-8') as user_file:
+                user_list = [line.strip() for line in user_file]
+        except FileNotFoundError:
+            print('This file (user_path) does not exist, please try again.')
+        else:
+            info['user_list'] = user_list
+        try:
+            with open(password_list_file, 'r', encoding='utf-8') as password_file:
+                password_list = [line.strip() for line in password_file]
+        except FileNotFoundError:
+                print('This file (password_path) does not exist, please try again.')
+        else:
+            info['password_list'] = password_list
+            return None
+
+def ssh_3_connect():
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    for user in info['user_list']:
+        for password in info['password_list']:
+            try:
+                ssh.connect(hostname=info['host'], port=info['port'], username=user, password=info['password'], disabled_algorithms=None, look_for_keys=False, allow_agent=False)
+                time.sleep(0.5)
+            except paramiko.AuthenticationException:
+                print(f'Login failed with user "{user}" and password "{password}".')
+                ssh.close()
+            else:
+                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                break
+    ssh.close()
 
 
 
