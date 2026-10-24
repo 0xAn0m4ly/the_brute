@@ -365,10 +365,10 @@ def ssh_3_info():
             'Enter the port: '
             ))
         user_list_file = input(
-            "Please type the file's path containing the passwords' list: "
+            "Please type the file's path containing the users' list: "
             )
         password_list_file = input(
-            'Enter the password: '
+            "Please type the file's path containing the passwords' list: "
             )
         try:
             with open(user_list_file, 'r', encoding='utf-8') as user_file:
@@ -387,12 +387,13 @@ def ssh_3_info():
             return None
 
 def ssh_3_connect():
+    ssh_3_info()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     for user in info['user_list']:
         for password in info['password_list']:
             try:
-                ssh.connect(hostname=info['host'], port=info['port'], username=user, password=info['password'], disabled_algorithms=None, look_for_keys=False, allow_agent=False)
+                ssh.connect(hostname=info['host'], port=info['port'], username=user, password=password, disabled_algorithms=None, look_for_keys=False, allow_agent=False)
                 time.sleep(0.5)
             except paramiko.AuthenticationException:
                 print(f'Login failed with user "{user}" and password "{password}".')
