@@ -10,7 +10,8 @@ import paramiko
 modes = {
     'a': 'ftp',
     'b': 'telnet',
-    'c': 'ssh'
+    'c': 'ssh',
+    'd': 'smb'
 }
 
 methods = {
