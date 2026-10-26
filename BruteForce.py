@@ -404,7 +404,52 @@ def ssh_3_connect():
                 break
     ssh.close()
 
+# Smb
+def smb():
+    while True:
+        for number, mode in methods.items():
+            print(number + ' -> ' + mode)
+        selected_mode = input(
+            'Please select the smb option from the previos ones by typing the correspondive number: '
+            )
+        if selected_mode == 'q':
+            print('Bye!')
+            sys.exit
+        elif selected_mode == '1':
+            smb_1_connect()
+            return None
+        elif selected_mode == '2':
+            smb_2_connect()
+            return None
+        elif selected_mode == '3':
+            smb_3_connect()
+            return None
+        else:
+            print('Mode not found, please try again.')
 
+def smb_1_info():
+    while True:
+        info['host'] = input(
+            'Enter the host: '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        info['user'] = input(
+            'Enter the user: '
+        )
+        password_list_file = input(
+            "Please type the file's path containing the passwords' list: "
+        )
+        try:
+            with open(password_list_file, 'r', encoding='utf-8') as file:
+                password_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            return password_list
+
+def smb
 
    
     
@@ -439,6 +484,9 @@ def input_mode():
             return None
         elif selected_mode == 'c':
             ssh()
+            return None
+        elif selected_mode == 'd':
+            smb()
             return None
         else:
             print('Mode not found, please try again.')
