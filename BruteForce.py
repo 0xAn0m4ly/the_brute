@@ -432,7 +432,7 @@ def smb():
 def smb_1_info():
     while True:
         info['host'] = input(
-            'Enter the host: '
+            'Enter the host (use the IP): '
         )
         info['port'] = int(input(
             'Enter the port: '
@@ -467,20 +467,43 @@ def smb_1_connect():
             break
     connection.close()
 
+def smb_2_info():
+    while True:
+        info['host'] = input(
+            'Enter the host (use the IP): '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        users_list_file = input(
+            "Please type the file's path containing the users' list: "
+        )
+        info['password'] = input(
+            'Enter the password: '
+        )
+        try:
+            with open(users_list_file, 'r', encoding='utf-8') as file:
+                user_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            return user_list
 
-
-
-   
-    
-    
-
-    
-
-    
-
+def smb_2_connect():
+    user_list = smb_2_info()
+    target_host = str(info['host']).strip()
+    target_port = int(info['port'])
+    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=target_port)
+    for user in user_list:
+        try:
+            connection.login(user=user, password=info['password'])
+        except SessionError:
+            print(f'Login failed with user "{user}" and password "{info['password']}".')
+        else:
+            print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
+            break
+    connection.close()
             
-
-
 
 
 # Input mode
