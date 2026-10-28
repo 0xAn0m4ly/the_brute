@@ -503,6 +503,57 @@ def smb_2_connect():
             print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
     connection.close()
+
+def smb_3_info():
+    while True:
+        info['host'] = input(
+            'Enter the host (use the IP): '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        users_list_file = input(
+            "Please type the file's path containing the users' list: "
+        )
+        passwords_list_file = input(
+                "Please type the file's path containing the passwords' list: "
+        )
+        try:
+            with open(users_list_file, 'r', encoding='utf-8') as file:
+                user_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            info['user_list'] = user_list
+        try:
+            with open(users_list_file, 'r', encoding='utf-8') as file:
+                password_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            info['password_list'] = password_list
+        return None
+
+def smb_3_connect():
+    smb_3_info()
+    target_host = str(info['host']).strip()
+    target_port = int(info['port'])
+    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=target_port)
+    for user in info['user_list']:
+        for password in info['password_list']:
+            try:
+                connection.login(user=user, password=password)
+            except SessionError:
+                print(f'Login failed with user "{user}" and password "{password}".')            
+            else:
+                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                break
+    connection.close()
+
+
+
+        
+        
             
 
 
