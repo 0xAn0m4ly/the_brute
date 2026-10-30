@@ -13,7 +13,8 @@ modes = {
     'a': 'ftp',
     'b': 'telnet',
     'c': 'ssh',
-    'd': 'smb'
+    'd': 'smb',
+    'e': 'mysql'
 }
 
 methods = {
@@ -550,6 +551,29 @@ def smb_3_connect():
                 break
     connection.close()
 
+def mysql():
+     while True:
+        for number, mode in methods.items():
+            print(number + ' -> ' + mode)
+        selected_mode = input(
+            'Please select the mysql option from the previos ones by typing the correspondive number: '
+            )
+        if selected_mode == 'q':
+            print('Bye!')
+            sys.exit
+        elif selected_mode == '1':
+            mysql_1_connect()
+            return None
+        elif selected_mode == '2':
+            mysql_2_connect()
+            return None
+        elif selected_mode == '3':
+            mysql_3_connect()
+            return None
+        else:
+            print('Mode not found, please try again.')
+
+def mysql_1_info():
 
 
         
@@ -580,6 +604,9 @@ def input_mode():
             return None
         elif selected_mode == 'd':
             smb()
+            return None
+        elif selected_mode == 'e':
+            mysql()
             return None
         else:
             print('Mode not found, please try again.')
