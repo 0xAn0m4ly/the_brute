@@ -165,9 +165,8 @@ def ftp_3_connect():
                 print(f'Login failed with user "{user}" and password "{password}".')
             else:
                 print(f'Login GRANTED with user "{user}" and password "{password}".')
-                break
-    ftp.quit()
-
+                ftp.quit()
+                sys.exit()
 
 # Telnet
 def telnet():
@@ -405,8 +404,8 @@ def ssh_3_connect():
                 ssh.close()
             else:
                 print(f'Login GRANTED with user "{user}" and password "{password}".')
-                break
-    ssh.close()
+                ssh.close()
+                sys.exit()
 
 # Smb
 def smb():
@@ -549,8 +548,9 @@ def smb_3_connect():
                 print(f'Login failed with user "{user}" and password "{password}".')            
             else:
                 print(f'Login GRANTED with user "{user}" and password "{password}".')
-                break
-    connection.close()
+                connection.close()
+                sys.exit()
+    
 
 def mysql1():
      while True:
@@ -680,6 +680,7 @@ def mysql_3_info():
             print('This file does not exist, please try again.')
         else:
             info['password_list'] = password_list
+            return None
 
 def mysql_3_connect():
     mysql_3_info()
@@ -696,8 +697,8 @@ def mysql_3_connect():
                 print(f'Login failed with user "{user}" and password "{password}".')
             else:
                 print(f'Login GRANTED with user "{user}" and password "{password}".')
-                break
-    connection.close()
+                connection.close()
+                sys.exit()
 
 
 
