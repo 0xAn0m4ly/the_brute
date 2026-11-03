@@ -611,6 +611,7 @@ def mysql_1_connect():
         else:
             print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
             break
+    connection.close()
 
 def mysql_2_info():
     while True:
@@ -621,7 +622,7 @@ def mysql_2_info():
             'Enter the port: '
         ))
         users_list_file = input(
-            "Please type the file's path containing the passwords' list: "
+            "Please type the file's path containing the users' list: "
         )
         info['password'] = input(
             "Enter the password:  "
@@ -649,7 +650,54 @@ def mysql_2_connect():
         else:
             print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
+    connection.close()
 
+def mysql_3_info():
+    while True:
+        info['host'] = input(
+            'Enter the host: '
+        )
+        info['port'] = int(input(
+            'Enter the port: '
+        ))
+        users_list_file = input(
+            "Please type the file's path containing the users' list: "
+        )
+        password_list_file = input(
+                "Please type the file's path containing the passwords' list: "
+        )
+        try:
+            with open(users_list_file, 'r', encoding='utf-8') as file:
+                user_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            info['user_list'] = user_list
+        try:
+            with open(users_list_file, 'r', encoding='utf-8') as file:
+                password_list = [line.strip() for line in file]
+        except FileNotFoundError:
+            print('This file does not exist, please try again.')
+        else:
+            info['password_list'] = password_list
+
+def mysql_3_connect():
+    mysql_3_info()
+    for user in info['user_list']:
+        for password in info['password_list']:
+            try:
+                connection = mysql.connector.connect(
+                    host = info['host'],
+                    port = info['port'],
+                    user = user,
+                    password = password
+                )
+            except mysql.connector.Error:
+                print(f'Login failed with user "{user}" and password "{password}".')
+            else:
+                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                break
+    connection.close()
 
 
 
