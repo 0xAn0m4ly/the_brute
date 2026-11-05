@@ -2,20 +2,17 @@
 import sys
 import time
 from ftplib import FTP, error_perm
-import socket
-import re
 import paramiko
 from impacket.smbconnection import SMBConnection, SessionError
-import ntstatus
 import mysql.connector
+from colorama import Fore, init                                                              
 
 # List and dictonaries
 modes = {
     'a': 'ftp',
-    'b': 'telnet',
-    'c': 'ssh',
-    'd': 'smb',
-    'e': 'mysql'
+    'b': 'ssh',
+    'c': 'smb',
+    'd': 'mysql',
 }
 
 methods = {
@@ -25,6 +22,12 @@ methods = {
 }
 
 info = {}
+
+# Delay
+delay = 0.5
+
+# Color autoreset
+init(autoreset=True)
 
 # Ftp
 def ftp():
@@ -54,9 +57,11 @@ def ftp_1_info():
         info['host'] = input(
             'Enter the host: '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'].strip() == '':
+            info['port'] = 21
         info['user'] = input(
             'Enter the user: '
         )
@@ -74,14 +79,15 @@ def ftp_1_info():
 def ftp_1_connect():
     password_list = ftp_1_info()
     ftp = FTP()
-    ftp.connect(host=info['host'], port=info['port']) # DA METTERE UN BLOCCO TRY EXCEPT
+    ftp.connect(host=info['host'], port=int(info['port'])) # DA METTERE UN BLOCCO TRY EXCEPT
     for password in password_list:
         try:
             ftp.login(user=info['user'], passwd=password)
         except error_perm:
-            print(f'Login failed with user "{info['user']}" and password "{password}".')
+            print(Fore.RED + f'Login failed with user "{info['user']}" and password "{password}".')
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{info['user']}" and password "{password}".')
             break
     ftp.quit()
 
@@ -90,9 +96,11 @@ def ftp_2_info():
         info['host'] = input(
             'Enter the host: '
             )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 21
         user_list_file = input(
             "Please type the file's path containing the users' list: "
         )
@@ -110,25 +118,28 @@ def ftp_2_info():
 def ftp_2_connect():
     user_list = ftp_2_info()
     ftp = FTP()
-    ftp.connect(host=info['host'], port=info['port'])
+    ftp.connect(host=info['host'], port=int(info['port']))
     for user in user_list:
         try:
             ftp.login(user=user, passwd=info['password'])
         except error_perm:
-            print(f'Login failed with user "{user}" and password "{info['password']}".')
+            print(Fore.RED + f'Login failed with user "{user}" and password "{info['password']}".')
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
     ftp.quit()
 
 def ftp_3_info():
     while True:
         info['host'] = input(
-            'Enter the host:\t'
+            'Enter the host: '
         )
-        info['port'] = int(input(
-            'Enter the port:\t'
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 21
         users_list_file = input(
             "Please type the file's path containing the users' list: "
         )
@@ -156,105 +167,18 @@ def ftp_3_connect():
     user_list = info['user_list']
     password_list = info['password_list']
     ftp = FTP()
-    ftp.connect(host=info['host'], port=info['port'])
+    ftp.connect(host=info['host'], port=int(info['port']))
     for user in user_list:
         for password in password_list:
             try:
                 ftp.login(user=user, passwd=password)
             except error_perm:
-                print(f'Login failed with user "{user}" and password "{password}".')
+                print(Fore.RED + f'Login failed with user "{user}" and password "{password}".')
+                time.sleep(delay)
             else:
-                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{password}".')
                 ftp.quit()
                 sys.exit()
-
-# Telnet
-def telnet():
-    while True:
-        for number, mode in methods.items():
-            print(number + ' -> ' + mode)
-        selected_mode = input(
-            'Please select the telnet option from the previos ones by typing the correspondive number: '
-            )
-        if selected_mode == 'q':
-            print('Bye!')
-            sys.exit
-        elif selected_mode == '1':
-            telnet_1_connect()
-            return None
-        elif selected_mode == '2':
-            telnet_2_connect()
-            return None
-        elif selected_mode == '3':
-            telnet_3_connect()
-            return None
-        else:
-            print('Mode not found, please try again.')
-
-def telnet_1_info():
-    while True:
-        for number, mode in methods.items():
-           print(number + ' -> ' + mode)
-        selected_mode = input(
-            'Please select the telnet option from the previos ones by typing the correspondive number: '
-           )
-        if selected_mode == 'q':
-            print('Bye!')
-            sys.exit
-        elif selected_mode == '1':
-            telnet_1_connect()
-            return None
-        elif selected_mode == '2':
-            telnet_2_connect()
-            return None
-        elif selected_mode == '3':
-            telnet_3_connect()
-            return None
-        else:
-            print('Mode not found, please try again.')
-
-def clean_telnet(data: bytes) -> str:
-    cleaned = re.sub(b'\xff[\xf0-\xff][\x00-\xff]|\xff\xfa.*?\xff\xf0', b'', data, flags=re.DOTALL)
-    return cleaned.decode('utf-8', 'ignore').strip()
-
-def telnet_1_connect():
-    password_list = telnet_1_info()
-    for password in password_list:
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(3.0)
-            s.connect((info['host'], info['port']))
-            
-            # Attende e legge tutto il banner iniziale (che arriva subito)
-            time.sleep(0.5)
-            banner = clean_telnet(s.recv(4096))
-            
-            # Invia l'username
-            s.sendall(f"{info['user']}\r\n".encode('utf-8'))
-            time.sleep(0.3)
-            s.recv(1024) # Legge la risposta intermedia (es. "Password:")
-            
-            # Invia la password
-            s.sendall(f"{password}\r\n".encode('utf-8'))
-            time.sleep(0.5)
-            
-            # Legge la risposta finale
-            response = clean_telnet(s.recv(1024))
-            s.close()
-            
-            # Verifica
-            if "incorrect" in response.lower() or "failed" in response.lower():
-                print(f"[-] Fallito: {password}")
-            else:
-                print(f"[+] SUCCESSO! Password: {password}")
-                break
-                
-        except Exception as e:
-            print(f"[!] Errore: {e}")
-            try:
-                s.close()
-            except:
-                pass
 
 # Ssh
 def ssh():
@@ -284,9 +208,11 @@ def ssh_1_info():
         info['host'] = input(
             'Enter the host: '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 22
         info['user'] = input(
             'Enter the user: '
         )
@@ -308,14 +234,15 @@ def ssh_1_connect():
     for password in password_list:
         try:
             ssh.connect(
-                hostname=info['host'], port=info['port'], username=info['user'], password=password, disabled_algorithms=None, look_for_keys=False, allow_agent=False
+                hostname=info['host'], port=int(info['port']), username=info['user'], password=password, disabled_algorithms=None, look_for_keys=False, allow_agent=False
                 )
             time.sleep(0.5)
         except paramiko.AuthenticationException:
-            print(f'Login failed with user "{info['user']}" and password "{password}".')
+            print(Fore.RED + f'Login failed with user "{info['user']}" and password "{password}".')
             ssh.close()
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{info['user']}" and password "{password}".')
             break
     ssh.close()
     # RIMA APERTO DOPO LA FINE RISOLVERE
@@ -325,9 +252,11 @@ def ssh_2_info():
         info['host'] = input(
             'Enter the host: '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 22
         user_list_file = input(
                 "Please type the file's path containing the passwords' list: "
             )
@@ -349,14 +278,15 @@ def ssh_2_connect():
     for user in user_list:
         try:
             ssh.connect(
-                hostname=info['host'], port=info['port'], username=user, password=info['password'], disabled_algorithms=None, look_for_keys=False, allow_agent=False
+                hostname=info['host'], port=int(info['port']), username=user, password=info['password'], disabled_algorithms=None, look_for_keys=False, allow_agent=False
                 )
             time.sleep(0.5)
         except paramiko.AuthenticationException:
-            print(f'Login failed with user "{user}" and password "{info['password']}".')
+            print(Fore.RED + f'Login failed with user "{user}" and password "{info['password']}".')
             ssh.close()
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
     ssh.close()
 
@@ -365,9 +295,11 @@ def ssh_3_info():
         info['host'] = input(
             'Enter the host: '
             )
-        info['port'] = int(input(
-            'Enter the port: '
-            ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+            )
+        if info['port'] == '':
+            info['port'] = 22
         user_list_file = input(
             "Please type the file's path containing the users' list: "
             )
@@ -397,13 +329,14 @@ def ssh_3_connect():
     for user in info['user_list']:
         for password in info['password_list']:
             try:
-                ssh.connect(hostname=info['host'], port=info['port'], username=user, password=password, disabled_algorithms=None, look_for_keys=False, allow_agent=False)
+                ssh.connect(hostname=info['host'], port=int(info['port']), username=user, password=password, disabled_algorithms=None, look_for_keys=False, allow_agent=False)
                 time.sleep(0.5)
             except paramiko.AuthenticationException:
-                print(f'Login failed with user "{user}" and password "{password}".')
+                print(Fore.RED + f'Login failed with user "{user}" and password "{password}".')
                 ssh.close()
+                time.sleep(delay)
             else:
-                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{password}".')
                 ssh.close()
                 sys.exit()
 
@@ -435,9 +368,11 @@ def smb_1_info():
         info['host'] = input(
             'Enter the host (use the IP): '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 445
         info['user'] = input(
             'Enter the user: '
         )
@@ -455,16 +390,16 @@ def smb_1_info():
 def smb_1_connect():
     password_list = smb_1_info()
     target_host = str(info['host']).strip()
-    target_port = int(info['port'])
-    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=target_port)
+    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=int(info['port']))
     for password in password_list:
         try:
             connection.login(user=info['user'], password=password)
             time.sleep(0.5)
         except SessionError:
-            print(f'Login failed with user "{info['user']}" and password "{password}".')
+            print(Fore.RED + f'Login failed with user "{info['user']}" and password "{password}".')
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{info['user']}" and password "{password}".')
             break
     connection.close()
 
@@ -473,9 +408,11 @@ def smb_2_info():
         info['host'] = input(
             'Enter the host (use the IP): '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 445
         users_list_file = input(
             "Please type the file's path containing the users' list: "
         )
@@ -493,15 +430,15 @@ def smb_2_info():
 def smb_2_connect():
     user_list = smb_2_info()
     target_host = str(info['host']).strip()
-    target_port = int(info['port'])
-    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=target_port)
+    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=int(info['port']))
     for user in user_list:
         try:
             connection.login(user=user, password=info['password'])
         except SessionError:
-            print(f'Login failed with user "{user}" and password "{info['password']}".')
+            print(Fore.RED + f'Login failed with user "{user}" and password "{info['password']}".')
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
     connection.close()
 
@@ -510,9 +447,11 @@ def smb_3_info():
         info['host'] = input(
             'Enter the host (use the IP): '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 445
         users_list_file = input(
             "Please type the file's path containing the users' list: "
         )
@@ -527,7 +466,7 @@ def smb_3_info():
         else:
             info['user_list'] = user_list
         try:
-            with open(users_list_file, 'r', encoding='utf-8') as file:
+            with open(passwords_list_file, 'r', encoding='utf-8') as file:
                 password_list = [line.strip() for line in file]
         except FileNotFoundError:
             print('This file does not exist, please try again.')
@@ -538,21 +477,21 @@ def smb_3_info():
 def smb_3_connect():
     smb_3_info()
     target_host = str(info['host']).strip()
-    target_port = int(info['port'])
-    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=target_port)
+    connection = SMBConnection(remoteHost=target_host, remoteName=target_host, sess_port=int(info['port']))
     for user in info['user_list']:
         for password in info['password_list']:
             try:
                 connection.login(user=user, password=password)
             except SessionError:
-                print(f'Login failed with user "{user}" and password "{password}".')            
+                print(Fore.RED + f'Login failed with user "{user}" and password "{password}".')
+                time.sleep(delay)            
             else:
-                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{password}".')
                 connection.close()
                 sys.exit()
     
 
-def mysql1():
+def mysqll():
      while True:
         for number, mode in methods.items():
             print(number + ' -> ' + mode)
@@ -579,9 +518,11 @@ def mysql_1_info():
         info['host'] = input(
             'Enter the host: '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 3306
         info['user'] = input(
             'Enter the user: '
         )
@@ -602,14 +543,15 @@ def mysql_1_connect():
         try:
             connection = mysql.connector.connect(
                 host = info['host'],
-                port = info['port'],
+                port = int(info['port']),
                 user = info['user'],
                 password = password
             )
         except mysql.connector.Error:
-            print(f'Login failed with user "{info['user']}" and password "{password}".')
+            print(Fore.RED + f'Login failed with user "{info['user']}" and password "{password}".')
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{info['user']}" and password "{password}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{info['user']}" and password "{password}".')
             break
     connection.close()
 
@@ -618,9 +560,11 @@ def mysql_2_info():
         info['host'] = input(
             'Enter the host: '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 3306
         users_list_file = input(
             "Please type the file's path containing the users' list: "
         )
@@ -641,14 +585,15 @@ def mysql_2_connect():
         try:
             connection = mysql.connector.connect(
                 host = info['host'],
-                port = info['port'],
+                port = int(info['port']),
                 user = user,
                 password = info['password']
             )
         except mysql.connector.Error:
-            print(f'Login failed with user "{user}" and password "{info['password']}".')
+            print(Fore.RED + f'Login failed with user "{user}" and password "{info['password']}".')
+            time.sleep(delay)
         else:
-            print(f'Login GRANTED with user "{user}" and password "{info['password']}".')
+            print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{info['password']}".')
             break
     connection.close()
 
@@ -657,9 +602,11 @@ def mysql_3_info():
         info['host'] = input(
             'Enter the host: '
         )
-        info['port'] = int(input(
-            'Enter the port: '
-        ))
+        info['port'] = input(
+            'Enter the port (press enter for the default one): '
+        )
+        if info['port'] == '':
+            info['port'] = 3306
         users_list_file = input(
             "Please type the file's path containing the users' list: "
         )
@@ -674,7 +621,7 @@ def mysql_3_info():
         else:
             info['user_list'] = user_list
         try:
-            with open(users_list_file, 'r', encoding='utf-8') as file:
+            with open(password_list_file, 'r', encoding='utf-8') as file:
                 password_list = [line.strip() for line in file]
         except FileNotFoundError:
             print('This file does not exist, please try again.')
@@ -689,35 +636,17 @@ def mysql_3_connect():
             try:
                 connection = mysql.connector.connect(
                     host = info['host'],
-                    port = info['port'],
+                    port = int(info['port']),
                     user = user,
                     password = password
                 )
             except mysql.connector.Error:
-                print(f'Login failed with user "{user}" and password "{password}".')
+                print(Fore.RED + f'Login failed with user "{user}" and password "{password}".')
+                time.sleep(delay)
             else:
-                print(f'Login GRANTED with user "{user}" and password "{password}".')
+                print(Fore.GREEN + f'Login GRANTED with user "{user}" and password "{password}".')
                 connection.close()
                 sys.exit()
-
-
-
-
-
-        
-
-
-
-
-
-        
-    
-
-
-        
-        
-            
-
 
 # Input mode
 def input_mode():
@@ -735,23 +664,15 @@ def input_mode():
             ftp()
             return None
         elif selected_mode == 'b':
-            telnet()
-            return None
-        elif selected_mode == 'c':
             ssh()
             return None
-        elif selected_mode == 'd':
+        elif selected_mode == 'c':
             smb()
             return None
-        elif selected_mode == 'e':
-            mysql1()
+        elif selected_mode == 'd':
+            mysqll()
             return None
         else:
             print('Mode not found, please try again.')
 
 input_mode()
-
-# BISOGNA METTERE UN IF Q DOVE CI SONO GLI INPUT IM MODO CHE SE VOLESSE USCIRE LO PUO FARE
-# BISOGNA PENSARE AL DELAY TRA UN TENTATIVO E UN ALTRO PER EVITARE DANNI
-# Mettere un opzione per lasciare la porta di default o user vuoto
-# Mettere dei colori per denied e granted
