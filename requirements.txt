@@ -1,0 +1,4 @@
+paramiko
+impacket
+mysql-connector-python
+colorama
