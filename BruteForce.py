@@ -1,3 +1,14 @@
+"""
+Scrip Name: the_brute
+Description: This Python script is a protocol 
+brute-force program that performs brute-force
+attacks on protocols such as FTP, SSH, SMB,
+MYSQL and much more! 
+Author: 0xAn0m4ly
+Date: 08/11/2026
+Version: 1.0
+"""
+
 # Libaries
 import sys
 import time
